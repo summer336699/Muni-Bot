@@ -1,6 +1,6 @@
 ```bash
-   git clone https://github.com/yourusername/lawgpt.git
-   cd lawgpt
+   git clone https://github.com/yourusername/robot.git
+   cd gpt
 
 **Split, Embed and Save Documents**
 
