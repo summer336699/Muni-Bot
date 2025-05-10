@@ -1,4 +1,6 @@
-
+```bash
+   git clone https://github.com/yourusername/lawgpt.git
+   cd lawgpt
 
 **Split, Embed and Save Documents**
 
