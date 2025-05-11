@@ -72,7 +72,8 @@ ANSWER:
 prompt = PromptTemplate(template=prompt_template, input_variables=["question", "chat_history"])
 
 # --- Model Setup ---
-model = genai.GenerativeModel("gemini-2.0-flash")
+#model = genai.GenerativeModel("gemini-2.0-flash")
+model = genai.GenerativeModel("gemini-2.5-flash-preview-04-17")
 
 # --- Predefined Prompts ---
 cusip_prompt = """Analyze all provided PDF documents. both related to 57582R2F2 and to 646039YM3. don't miss any of the CUSIP.
