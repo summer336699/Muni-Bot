@@ -4,7 +4,7 @@ import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 from langchain.prompts import PromptTemplate
-
+import time
 # --- Load environment variables ---
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -19,10 +19,17 @@ except Exception as e:
 # --- Upload files (each run) ---
 uploaded_files_output = []
 uploaded_files = []
-for file in os.listdir("./LEGAL-DATA"):
-    file_path = os.path.join("./LEGAL-DATA", file)
+for file in os.listdir("./DATA"):
+    file_path = os.path.join("./DATA", file)
     if os.path.isfile(file_path):
         uploaded_file = genai.upload_file(path=file_path)
+        for attempt in range(5):
+            try:
+                uploaded_file = genai.upload_file(path=file_path)
+                break
+            except Exception as e:
+                st.warning(f"Upload attempt {attempt+1} failed: {e}")
+                time.sleep(2)
         uploaded_files.append(uploaded_file)
 uploaded_files_output = uploaded_files
 
