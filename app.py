@@ -89,7 +89,7 @@ with col2:
     if st.button("🧾 Compare Document Differences"):
         st.session_state.pending_prompt = compare_prompt
 
-chat_box_input = st.chat_input("Ask a question related to the 2 Cusips's OS...")
+chat_box_input = st.chat_input("Ask a question related to the 2 CUSIPs' OS...")
 
 if st.session_state.pending_prompt:
     user_input = st.session_state.pending_prompt
