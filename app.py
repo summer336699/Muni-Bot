@@ -80,12 +80,15 @@ with col2:
     if st.button("🧾 Compare Document Differences"):
         st.session_state.pending_prompt = compare_prompt
 
-# --- Use pending prompt if available ---
+chat_box_input = st.chat_input("Ask a question related to the 2 Cusips's OS...")
+
 if st.session_state.pending_prompt:
     user_input = st.session_state.pending_prompt
     st.session_state.pending_prompt = None
+elif chat_box_input:
+    user_input = chat_box_input
 else:
-    user_input = st.chat_input("Ask a question related to the 2 Cusips's OS...")
+    user_input = None
 
 # --- Display chat history ---
 for message in st.session_state.messages:
