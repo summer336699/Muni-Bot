@@ -1,4 +1,6 @@
 import streamlit as st
+st.set_page_config(page_title="57582R2F2 vs 646039YM3 OS Analyzer", layout="wide")
+
 import os
 import json
 from dotenv import load_dotenv
@@ -34,7 +36,7 @@ for file in os.listdir("./DATA"):
 uploaded_files_output = uploaded_files
 
 # --- Streamlit UI setup ---
-st.set_page_config(page_title="57582R2F2 vs 646039YM3 OS Analyzer", layout="wide")
+
 st.markdown("""<style>
     div.stButton > button:first-child {
         background-color: #ffd0d0;
