@@ -20,19 +20,32 @@ except Exception as e:
 
 # --- Upload files (each run) ---
 uploaded_files_output = []
+
+if "uploaded_file_ids" not in st.session_state:
+    st.session_state.uploaded_file_ids = {}
+
 uploaded_files = []
+
 for file in os.listdir("./DATA"):
     file_path = os.path.join("./DATA", file)
-    if os.path.isfile(file_path):
-        uploaded_file = genai.upload_file(path=file_path)
+    if os.path.isfile(file_path) and file not in st.session_state.uploaded_file_ids:
         for attempt in range(5):
             try:
                 uploaded_file = genai.upload_file(path=file_path)
-                break
+                st.session_state.uploaded_file_ids[file] = uploaded_file.name
+                uploaded_files.append(uploaded_file)
+                break  # Exit retry loop on success
             except Exception as e:
-                st.warning(f"Upload attempt {attempt+1} failed: {e}")
+                st.warning(f"Attempt {attempt+1} to upload '{file}' failed: {e}")
                 time.sleep(2)
-        uploaded_files.append(uploaded_file)
+        else:
+            st.error(f"❌ Failed to upload '{file}' after 5 attempts.")
+    elif file in st.session_state.uploaded_file_ids:
+        try:
+            uploaded_files.append(genai.get_file(name=st.session_state.uploaded_file_ids[file]))
+        except Exception as e:
+            st.warning(f"⚠️ Could not retrieve cached file '{file}': {e}")
+
 uploaded_files_output = uploaded_files
 
 # --- Streamlit UI setup ---
