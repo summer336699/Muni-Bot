@@ -89,11 +89,11 @@ prompt = PromptTemplate(template=prompt_template, input_variables=["question", "
 model = genai.GenerativeModel("gemini-2.5-pro-preview-05-06")
 
 # --- Predefined Prompts ---
-cusip_prompt = """Analyze all provided PDF documents. both related to 57582R2F2 and to 646039YM3. don't miss any of the CUSIP.
-Extract the CUSIP list with details from each bond's document.
-Present the information clearly, preferably in a table."""
-compare_prompt = """Analyze all provided PDF documents, compare the key differences between them.
-Present the information clearly, preferably in a table."""
+cusip_prompt = """Analyze all uploaded PDF documents related to both CUSIPs: 57582R2F2 and 646039YM3. 
+Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned in each bond’s documents, including relevant details. 
+Present the extracted information clearly, preferably in a table format."""
+compare_prompt = """Analyze all provided PDF documents and compare the key differences between them. 
+Summarize the findings clearly, preferably in a table format."""
 
 col1, col2 = st.columns(2)
 with col1:
