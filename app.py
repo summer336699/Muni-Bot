@@ -61,7 +61,7 @@ st.markdown("""<style>
         visibility: hidden;
     }
 </style>""", unsafe_allow_html=True)
-st.markdown("<h3>⚖️ 57582R2F2 vs 646039YM3 OS Analyzer (Please wait for the robot to analyze the 2 big OS files)</h3>", unsafe_allow_html=True)
+st.markdown("<h3>⚖️ 57582R2F2 vs 646039YM3 OS Analyzer (Please wait while the system analyzes the two comprehensive OS documents.)</h3>", unsafe_allow_html=True)
 
 # --- Session state ---
 def reset_conversation():
