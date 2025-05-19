@@ -144,7 +144,8 @@ model = genai.GenerativeModel("gemini-2.5-pro-preview-05-06")
 if selected_cusips:
     joined_cusips = " and ".join(selected_cusips) if len(selected_cusips) <= 2 else ", ".join(selected_cusips)
     cusip_prompt = f"""Analyze all uploaded PDF documents related to the following CUSIPs: {joined_cusips}.
-Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned in each bond’s documents, including relevant details.
+Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned in each bond’s documents, including relevant details. 
+Sometimes, you may encounter a CUSIP presented as two parts: a 6-character Base CUSIP (or CUSIP Prefix) and a 3-character CUSIP Suffix. To form the full 9-character CUSIP, simply combine the prefix and suffix.
 Present the extracted information clearly, preferably in a table format."""
     compare_prompt = f"""Analyze all provided PDF documents related to {joined_cusips} and compare the key differences between them.
 Summarize the findings clearly, preferably in a table format."""
