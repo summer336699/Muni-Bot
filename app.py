@@ -1,5 +1,5 @@
 import streamlit as st
-st.set_page_config(page_title="57582R2F2 vs 646039YM3 OS Analyzer", layout="wide")
+st.set_page_config(page_title="Muni OS Analyzer", layout="wide")
 
 import os
 import json
@@ -21,12 +21,40 @@ except Exception as e:
 # --- Upload files (each run) ---
 uploaded_files_output = []
 
+CUSIPS = [
+    "57582R2F2",
+    "646039YM3",
+    "93974EVY9",
+    "8827236V6",
+    "64966MXN4",
+    "13063D7Q5",
+]
+
+CUSIP_DESCRIPTIONS = {
+    "57582R2F2": "MASSACHUSETTS ST",
+    "646039YM3": "NEW JERSEY ST",
+    "93974EVY9": "WASHINGTON ST",
+    "64966MXN4": "NEW YORK N Y",
+    "8827236V6": "TEXAS ST",
+    "13063D7Q5": "CALIFORNIA ST",
+}
+
 if "uploaded_file_ids" not in st.session_state:
     st.session_state.uploaded_file_ids = {}
 
+st.sidebar.header("Select CUSIPs")
+selected_cusips = [
+    c
+    for c in CUSIPS
+    if st.sidebar.checkbox(
+        f"{c} ({CUSIP_DESCRIPTIONS.get(c, '')})", key=c
+    )
+]
+
 uploaded_files = []
 
-for file in os.listdir("./DATA"):
+for cusip in selected_cusips:
+    file = f"{cusip}.pdf"
     file_path = os.path.join("./DATA", file)
     if os.path.isfile(file_path) and file not in st.session_state.uploaded_file_ids:
         for attempt in range(5):
@@ -61,7 +89,11 @@ st.markdown("""<style>
         visibility: hidden;
     }
 </style>""", unsafe_allow_html=True)
-st.markdown("<h3>⚖️ 57582R2F2 vs 646039YM3 OS Analyzer (Please wait while the system analyzes the two comprehensive OS documents.)</h3>", unsafe_allow_html=True)
+header_cusips = " vs ".join(selected_cusips) if selected_cusips else "Muni OS"
+st.markdown(
+    f"<h3>⚖️ {header_cusips} OS Analyzer (Please wait while the system analyzes the selected OS documents.)</h3>",
+    unsafe_allow_html=True,
+)
 
 # --- Session state ---
 def reset_conversation():
@@ -89,11 +121,16 @@ prompt = PromptTemplate(template=prompt_template, input_variables=["question", "
 model = genai.GenerativeModel("gemini-2.5-pro-preview-05-06")
 
 # --- Predefined Prompts ---
-cusip_prompt = """Analyze all uploaded PDF documents related to both CUSIPs: 57582R2F2 and 646039YM3. 
-Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned in each bond’s documents, including relevant details. 
+if selected_cusips:
+    joined_cusips = " and ".join(selected_cusips) if len(selected_cusips) <= 2 else ", ".join(selected_cusips)
+    cusip_prompt = f"""Analyze all uploaded PDF documents related to the following CUSIPs: {joined_cusips}.
+Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned in each bond’s documents, including relevant details.
 Present the extracted information clearly, preferably in a table format."""
-compare_prompt = """Analyze all provided PDF documents and compare the key differences between them. 
+    compare_prompt = f"""Analyze all provided PDF documents related to {joined_cusips} and compare the key differences between them.
 Summarize the findings clearly, preferably in a table format."""
+else:
+    cusip_prompt = """Analyze all uploaded PDF documents. Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned, including relevant details. Present the extracted information clearly, preferably in a table format."""
+    compare_prompt = """Analyze all provided PDF documents and compare the key differences between them. Summarize the findings clearly, preferably in a table format."""
 
 col1, col2 = st.columns(2)
 with col1:
@@ -103,7 +140,7 @@ with col2:
     if st.button("🧾 Compare Document Differences"):
         st.session_state.pending_prompt = compare_prompt
 
-chat_box_input = st.chat_input("Ask a question related to the 2 CUSIPs' OS...")
+chat_box_input = st.chat_input("Ask a question related to the selected CUSIPs' OS...")
 
 if st.session_state.pending_prompt:
     user_input = st.session_state.pending_prompt
