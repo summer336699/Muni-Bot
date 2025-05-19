@@ -42,14 +42,34 @@ CUSIP_DESCRIPTIONS = {
 if "uploaded_file_ids" not in st.session_state:
     st.session_state.uploaded_file_ids = {}
 
-st.sidebar.header("Select CUSIPs")
-selected_cusips = [
-    c
-    for c in CUSIPS
-    if st.sidebar.checkbox(
-        f"{c} ({CUSIP_DESCRIPTIONS.get(c, '')})", key=c
+MAX_SELECTED = 2
+
+if "selected_order" not in st.session_state:
+    st.session_state.selected_order = []
+
+
+def handle_checkbox_change(cusip: str) -> None:
+    """Maintain selection order and enforce a maximum of two selections."""
+    if st.session_state[cusip]:
+        if cusip not in st.session_state.selected_order:
+            st.session_state.selected_order.append(cusip)
+        if len(st.session_state.selected_order) > MAX_SELECTED:
+            first = st.session_state.selected_order.pop(0)
+            st.session_state[first] = False
+    else:
+        if cusip in st.session_state.selected_order:
+            st.session_state.selected_order.remove(cusip)
+
+st.sidebar.header("Select 1-2 CUSIPs")
+for c in CUSIPS:
+    st.sidebar.checkbox(
+        f"{c} ({CUSIP_DESCRIPTIONS.get(c, '')})",
+        key=c,
+        on_change=handle_checkbox_change,
+        args=(c,),
     )
-]
+
+selected_cusips = [c for c in CUSIPS if st.session_state.get(c)]
 
 uploaded_files = []
 
