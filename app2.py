@@ -1,5 +1,5 @@
 import streamlit as st
-st.set_page_config(page_title="57582R2F2 vs 646039YM3 OS Analyzer", layout="wide")
+st.set_page_config(page_title="Muni OS Analyzer", layout="wide")
 
 import os
 import json
@@ -20,19 +20,80 @@ except Exception as e:
 
 # --- Upload files (each run) ---
 uploaded_files_output = []
+
+CUSIPS = [
+    "57582R2F2",
+    "646039YM3",
+    "93974EVY9",
+    "8827236V6",
+    "64966MXN4",
+    "13063D7Q5",
+]
+
+CUSIP_DESCRIPTIONS = {
+    "57582R2F2": "MASSACHUSETTS ST",
+    "646039YM3": "NEW JERSEY ST",
+    "93974EVY9": "WASHINGTON ST",
+    "64966MXN4": "NEW YORK N Y",
+    "8827236V6": "TEXAS ST",
+    "13063D7Q5": "CALIFORNIA ST",
+}
+
+if "uploaded_file_ids" not in st.session_state:
+    st.session_state.uploaded_file_ids = {}
+
+MAX_SELECTED = 2
+
+if "selected_order" not in st.session_state:
+    st.session_state.selected_order = []
+
+
+def handle_checkbox_change(cusip: str) -> None:
+    """Maintain selection order and enforce a maximum of two selections."""
+    if st.session_state[cusip]:
+        if cusip not in st.session_state.selected_order:
+            st.session_state.selected_order.append(cusip)
+        if len(st.session_state.selected_order) > MAX_SELECTED:
+            first = st.session_state.selected_order.pop(0)
+            st.session_state[first] = False
+    else:
+        if cusip in st.session_state.selected_order:
+            st.session_state.selected_order.remove(cusip)
+
+st.sidebar.header("Select 1-2 CUSIPs")
+for c in CUSIPS:
+    st.sidebar.checkbox(
+        f"{c} ({CUSIP_DESCRIPTIONS.get(c, '')})",
+        key=c,
+        on_change=handle_checkbox_change,
+        args=(c,),
+    )
+
+selected_cusips = [c for c in CUSIPS if st.session_state.get(c)]
+
 uploaded_files = []
-for file in os.listdir("./DATA"):
+
+for cusip in selected_cusips:
+    file = f"{cusip}.pdf"
     file_path = os.path.join("./DATA", file)
-    if os.path.isfile(file_path):
-        uploaded_file = genai.upload_file(path=file_path)
+    if os.path.isfile(file_path) and file not in st.session_state.uploaded_file_ids:
         for attempt in range(5):
             try:
                 uploaded_file = genai.upload_file(path=file_path)
-                break
+                st.session_state.uploaded_file_ids[file] = uploaded_file.name
+                uploaded_files.append(uploaded_file)
+                break  # Exit retry loop on success
             except Exception as e:
-                st.warning(f"Upload attempt {attempt+1} failed: {e}")
+                st.warning(f"Attempt {attempt+1} to upload '{file}' failed: {e}")
                 time.sleep(2)
-        uploaded_files.append(uploaded_file)
+        else:
+            st.error(f"❌ Failed to upload '{file}' after 5 attempts.")
+    elif file in st.session_state.uploaded_file_ids:
+        try:
+            uploaded_files.append(genai.get_file(name=st.session_state.uploaded_file_ids[file]))
+        except Exception as e:
+            st.warning(f"⚠️ Could not retrieve cached file '{file}': {e}")
+
 uploaded_files_output = uploaded_files
 
 # --- Streamlit UI setup ---
@@ -48,7 +109,11 @@ st.markdown("""<style>
         visibility: hidden;
     }
 </style>""", unsafe_allow_html=True)
-st.markdown("<h3>⚖️ 57582R2F2 vs 646039YM3 OS Analyzer (Please wait for the robot to analyze the 2 big OS files)</h3>", unsafe_allow_html=True)
+header_cusips = " vs ".join(selected_cusips) if selected_cusips else "Muni OS"
+st.markdown(
+    f"<h3>⚖️ {header_cusips} OS Analyzer (Please wait while the system analyzes the selected OS documents.)</h3>",
+    unsafe_allow_html=True,
+)
 
 # --- Session state ---
 def reset_conversation():
@@ -76,11 +141,17 @@ prompt = PromptTemplate(template=prompt_template, input_variables=["question", "
 model = genai.GenerativeModel("gemini-2.5-pro-preview-05-06")
 
 # --- Predefined Prompts ---
-cusip_prompt = """Analyze all provided PDF documents. both related to 57582R2F2 and to 646039YM3. don't miss any of the CUSIP.
-Extract the CUSIP list with details from each bond's document.
-Present the information clearly, preferably in a table."""
-compare_prompt = """Analyze all provided PDF documents, compare the key differences between them.
-Present the information clearly, preferably in a table."""
+if selected_cusips:
+    joined_cusips = " and ".join(selected_cusips) if len(selected_cusips) <= 2 else ", ".join(selected_cusips)
+    cusip_prompt = f"""Analyze all uploaded PDF documents related to the following CUSIPs: {joined_cusips}.
+Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned in each bond’s documents, including relevant details. 
+Sometimes, you may encounter a CUSIP presented as two parts: a 6-character Base CUSIP (or CUSIP Prefix) and a 3-character CUSIP Suffix. To form the full 9-character CUSIP, simply combine the prefix and suffix.
+Present the extracted information clearly, preferably in a table format."""
+    compare_prompt = f"""Analyze all provided PDF documents related to {joined_cusips} and compare the key differences between them.
+Summarize the findings clearly, preferably in a table format."""
+else:
+    cusip_prompt = """Analyze all uploaded PDF documents. Ensure no CUSIP is overlooked. Extract a comprehensive list of CUSIPs mentioned, including relevant details. Present the extracted information clearly, preferably in a table format."""
+    compare_prompt = """Analyze all provided PDF documents and compare the key differences between them. Summarize the findings clearly, preferably in a table format."""
 
 col1, col2 = st.columns(2)
 with col1:
@@ -90,7 +161,7 @@ with col2:
     if st.button("🧾 Compare Document Differences"):
         st.session_state.pending_prompt = compare_prompt
 
-chat_box_input = st.chat_input("Ask a question related to the 2 CUSIPs' OS...")
+chat_box_input = st.chat_input("Ask a question related to the selected CUSIPs' OS...")
 
 if st.session_state.pending_prompt:
     user_input = st.session_state.pending_prompt
