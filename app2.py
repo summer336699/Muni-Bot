@@ -28,6 +28,8 @@ CUSIPS = [
     "8827236V6",
     "64966MXN4",
     "13063D7Q5",
+    "047870NE6",
+    "650028ZA4",    
 ]
 
 CUSIP_DESCRIPTIONS = {
@@ -37,6 +39,8 @@ CUSIP_DESCRIPTIONS = {
     "64966MXN4": "NEW YORK N Y",
     "8827236V6": "TEXAS ST",
     "13063D7Q5": "CALIFORNIA ST",
+    "047870NE6": "ATLANTA GA WTR & WASTE WTR REV",
+    "650028ZA4": "NEW YORK ST TWY AUTH ST PERS I",    
 }
 
 if "uploaded_file_ids" not in st.session_state:
