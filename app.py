@@ -1,7 +1,7 @@
 import streamlit as st
 st.set_page_config(page_title="Muni OS Analyzer", layout="wide")
 st.markdown(
-    "<p style='font-size: small;'>For mobile users, please tap the arrow to select CUSIPs.</p>",
+    "<p style='font-size: small;'>For mobile users, please tap the arrow above to select CUSIPs.</p>",
     unsafe_allow_html=True,
 )
 import os
