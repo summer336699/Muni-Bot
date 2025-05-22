@@ -142,7 +142,7 @@ prompt = PromptTemplate(template=prompt_template, input_variables=["question", "
 
 # --- Model Setup ---
 #model = genai.GenerativeModel("gemini-2.0-flash")
-model = genai.GenerativeModel("gemini-2.5-pro-preview-05-06")
+model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
 
 # --- Predefined Prompts ---
 if selected_cusips:
